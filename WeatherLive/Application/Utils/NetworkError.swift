@@ -8,7 +8,7 @@
 import Foundation
 
 // Define an enum to represent different HTTP errors
-enum NetworkError: Error {
+enum NetworkError: LocalizedError {
     case badRequest // 400
     case unauthorized // 401
     case forbidden // 403
@@ -49,6 +49,35 @@ enum NetworkError: Error {
             self = .gatewayTimeout
         default:
             self = .unknown(code: statusCode)
+        }
+    }
+    
+    var errorDescription: String? {
+        switch self {
+        case .badRequest:
+            return "Bad request"
+        case .unauthorized:
+            return "Unauthorized"
+        case .forbidden:
+            return "Forbidden"
+        case .notFound:
+            return "Not found"
+        case .methodNotAllowed:
+            return "Method not allowed"
+        case .requestTimeout:
+            return "Request timeout"
+        case .internalServerError:
+            return "Internal server error"
+        case .notImplemented:
+            return "Not implemented"
+        case .badGateway:
+            return "Bad gateway"
+        case .serviceUnavailable:
+            return "Service unavailable"
+        case .gatewayTimeout:
+            return "Gateway timeout"
+        case .unknown(code: let code):
+            return "Unknown error: \(code)"
         }
     }
 }

@@ -17,8 +17,10 @@ public class APIClient: APIClientInterface {
     func request<T:Decodable>(url:String, type: T.Type, decoder: JSONDecoder) -> AnyPublisher<T,Error> {
         
         guard let url = URL(string: url) else { return Fail(error: NetworkError.badRequest).eraseToAnyPublisher() }
+        var request = URLRequest(url: url)
+        request.addValue("no-store", forHTTPHeaderField: "Cache-Control")
         
-        return URLSession.shared.dataTaskPublisher(for: url)
+        return URLSession.shared.dataTaskPublisher(for: request)
             .tryMap({ data, response in
                 print("Api called")
                 guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
