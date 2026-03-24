@@ -1,30 +1,34 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
+name: iOS CI
 
-# GitHub recommends pinning actions to a commit SHA.
-# To get a newer version, you will need to update the SHA.
-# You can also reference a tag or branch, but the action may change without warning.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
 
-name: Swift
-
-on: [push]
+concurrency:
+  group: ios-ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
-    name: Swift ${{ matrix.swift }} on ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest]
-        swift: ["5.0"]
-    runs-on: ${{ matrix.os }}
+  app-tests:
+    name: WeatherLive Tests
+    runs-on: macos-15
+    timeout-minutes: 30
     steps:
-      - uses: swift-actions/setup-swift@65540b95f51493d65f5e59e97dcef9629ddf11bf
-        with:
-          swift-version: ${{ matrix.swift }}
       - uses: actions/checkout@v5
-      - name: Build
-        run: swift build
-      - name: Run tests
-        run: swift test
+
+      - name: Xcode Version
+        run: xcodebuild -version
+
+      - name: Resolve Swift Packages
+        run: xcodebuild -resolvePackageDependencies -project WeatherLive.xcodeproj -scheme WeatherLive
+
+      - name: Run WeatherLiveTests
+        run: |
+          xcodebuild test \
+            -project WeatherLive.xcodeproj \
+            -scheme WeatherLive \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+            -only-testing: WeatherLiveTests
